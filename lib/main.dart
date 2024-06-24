@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:utip/providers/TipCalculatorModel.dart';
 import 'package:utip/widgets/person_counter.dart';
 import 'package:utip/widgets/tip_slider.dart';
 import 'package:utip/widgets/bill_amount.dart';
+import 'package:utip/widgets/total_per_person.dart';
+import 'package:utip/widgets/tip_row.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(ChangeNotifierProvider(
+      create: (context) => Tipcalculatormodel(), child: const MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -32,38 +37,12 @@ class UTip extends StatefulWidget {
 }
 
 class _UTipState extends State<UTip> {
-  int _personCount = 1;
-
-  double _tipPercentage = 0.0;
-  double _billTotal = 0.0;
-
-  double totalPerPerson() {
-    return ((_billTotal * _tipPercentage) + (_billTotal) / _personCount);
-  }
-
-  double totalTip() {
-    return ((_billTotal * _tipPercentage));
-  }
-
-  void increment() {
-    setState(() {
-      _personCount = _personCount + 1;
-    });
-  }
-
-  void decrement() {
-    setState(() {
-      if (_personCount > 1) {
-        _personCount = _personCount - 1;
-      }
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     var theme = Theme.of(context);
-    double total = totalPerPerson();
-    double totalT = totalTip();
+    final model = Provider.of<Tipcalculatormodel>(context);
+
+   
     final style = theme.textTheme.titleMedium!.copyWith(
       color: theme.colorScheme.onPrimary,
       fontWeight: FontWeight.bold,
@@ -75,30 +54,7 @@ class _UTipState extends State<UTip> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.inversePrimary,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Column(
-                  children: [
-                    Text(
-                      'Total Per Person',
-                      style: style,
-                    ),
-                    Text(
-                      '$total',
-                      style: style.copyWith(
-                        color: theme.colorScheme.onPrimary,
-                        fontSize: theme.textTheme.displaySmall?.fontSize,
-                      ),
-                    ),
-                  ],
-                )),
-          ),
+          TotalPerPerson(theme: theme, style: style, total: model.totalPerPerson),
           //Form
           Padding(
             padding: const EdgeInsets.all(8.0),
@@ -115,52 +71,37 @@ class _UTipState extends State<UTip> {
               child: Column(
                 children: [
                   BillAmountField(
-                    billAmount: _billTotal.toString(),
-                    onChanged: (value){
-                      setState(() {
-                        _billTotal = double.parse(value);
-                      });
-                    } ,
+                    billAmount: model.billTotal.toString(),
+                    onChanged: (value) {
+                      model.updateBillTotal(double.parse(value));
+                    },
                   ),
                   //Split Bill Area
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "Split",
-                        style: theme.textTheme.titleMedium,
-                      ),
-                      PersonCounter(
-                        theme: theme,
-                        personCount: _personCount,
-                        onDecrement: decrement,
-                        onIncrement: increment,
-                      ),
-                    ],
+                  PersonCounter(
+                    theme: theme,
+                    personCount: model.personCount,
+                    onDecrement: () {
+                      if(model.personCount > 1) {
+                        model.updatePersonCount(model.personCount -1);
+                      }
+                    } ,
+                    onIncrement: (){
+                      model.updatePersonCount(model.personCount +1);
+
+                    },
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Tip',
-                        style: theme.textTheme.titleMedium,
-                      ),
-                      Text(
-                        "$totalT",
-                        style: theme.textTheme.titleMedium,
-                      ),
-                    ],
-                  ),
+                  TipRow(theme: theme, billTotal: model.billTotal, percentage: model.tipPercentage,),
 
                   //slider text
-                  Text('${(_tipPercentage * 100).round()}%'),
+                  Text('${(model.tipPercentage * 100).round()}%'),
 
                   //tip slider
-                  TipSlider(tipPercentage: _tipPercentage, onChanged: (double value) { 
-                    setState(() {
-                      _tipPercentage = value;
-                    });
-                   },),
+                  TipSlider(
+                    tipPercentage: model.tipPercentage,
+                    onChanged: (double value) {
+                      model.updateTipPercentage(value);
+                    },
+                  ),
                 ],
               ),
             ),
