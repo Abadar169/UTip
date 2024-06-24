@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:flutter/widgets.dart';
 
 void main() {
   runApp(const MyApp());
@@ -14,7 +14,6 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
@@ -31,6 +30,23 @@ class UTip extends StatefulWidget {
 }
 
 class _UTipState extends State<UTip> {
+  int _personCount = 1;
+
+  void increment() {
+    setState(() {
+      _personCount = _personCount + 1;
+    });
+  }
+
+  void decrement() {
+    setState(() {
+      if(_personCount > 0){
+
+      _personCount = _personCount - 1;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     var theme = Theme.of(context);
@@ -41,7 +57,6 @@ class _UTipState extends State<UTip> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('UTip'),
-        
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -49,29 +64,82 @@ class _UTipState extends State<UTip> {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Container(
-              padding: const EdgeInsets.all(20),
-              decoration:  BoxDecoration(
-                color: theme.colorScheme.inversePrimary,
-                borderRadius: BorderRadius.circular(10),
-                
-              ),
-              child:  Column(
-                children: [
-                    Text('Total Per Person',
-                    style: style,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.inversePrimary,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      'Total Per Person',
+                      style: style,
                     ),
-                    Text('\$23.99',
+                    Text(
+                      '\$23.99',
                       style: style.copyWith(
                         color: theme.colorScheme.onPrimary,
                         fontSize: theme.textTheme.displaySmall?.fontSize,
                       ),
                     ),
-                ],
-              )
-            ),
+                  ],
+                )),
           ),
+          //Form
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Container(
+              width: 100,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(5),
+                border: Border.all(
+                  color: theme.colorScheme.primary,
+                  width: 2,
+                ),
+              ),
+              child: Column(
+                children: [
+                  TextField(
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.attach_money),
+                      labelText: 'Bill Amount',
+                    ),
+                    keyboardType: TextInputType.number,
+                    onChanged: (String value) {
+                      print(value);
+                    },
+                  ),
+                  //Split Bill Area
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Split",
+                        style: theme.textTheme.titleMedium,
+                      ),
+                      Row(
+                        children: [
+                           IconButton(
+                            color: theme.colorScheme.primary,
+                              onPressed: decrement, icon: const Icon(Icons.remove)),
+                          Text(
+                            _personCount.toString(),
+                            style: theme.textTheme.titleMedium,
+                          ),
+                          IconButton(
+                            color: theme.colorScheme.primary,
+                              onPressed: increment, icon: const Icon(Icons.add)),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          )
         ],
-      ), 
+      ),
     );
   }
 }
